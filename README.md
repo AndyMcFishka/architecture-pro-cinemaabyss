@@ -58,7 +58,7 @@
 ### Helm Charts
 Charts Helm для упрощения развертывания и управления:
 
-Расположены в src/kubernetes/helm/cinemaabyss/.
+Расположены в src/kubernetes/helm/.
 
 ### Kafka
 Расположено в src/kubernetes/kafka/.
