@@ -435,6 +435,12 @@ You can see 21 for the upstream_rq_pending_overflow value which means 21 calls s
 
 Приложите скриншот работы circuit breaker'а
 
+[Конфигурация](src/kubernetes/circuit-breaker-config.yaml): число ответов 503 совпало с приростом overflow — 490 у monolith и 488 у movies.
+
+![Circuit Breaker — monolith](screenshots/task5-monolith.png)
+
+![Circuit Breaker — movies-service](screenshots/task5-movies.png)
+
 Удаляем все
 ```bash
 istioctl uninstall --purge
