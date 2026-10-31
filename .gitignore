@@ -154,3 +154,13 @@ go.work
 
 # Postman tests reports
 tests/postman/reports/
+
+# Local task description
+/TASK.MD
+
+# Local progress and cross-chat context
+/workprogress.md
+/AGENTS.md
+
+# Intermediate work
+/wip/

@@ -1,0 +1,80 @@
+@startuml
+!include <C4/C4_Container>
+title to be
+LAYOUT_TOP_DOWN()
+skinparam nodesep 45
+skinparam ranksep 65
+skinparam shadowing false
+skinparam minClassWidth 230
+skinparam defaultTextAlignment center
+skinparam linetype polyline
+AddRelTag("event", $lineColor="#327A65", $lineStyle=DashedLine())
+AddRelTag("service", $lineColor="#B46A17")
+
+Person(user, "Viewer", "Использует любой из трёх клиентов")
+System_Boundary(platform, "CinemaAbyss") {
+  together {
+    Container(web, "Web App", "Browser", "Сайт и видеоплеер")
+    Container(mobile, "Mobile App", "iOS / Android", "Мобильный интерфейс и плеер")
+    Container(tv, "Smart TV App", "Smart TV", "ТВ-интерфейс и плеер")
+  }
+  Container(gateway, "API Gateway", "Go / HTTP", "Единый вход клиентского API; проверка токена и маршрутизация")
+    Container(users, "users", "Go / REST", "Аутентификация, профиль, избранное")
+    Container(catalog, "movies", "Go / REST", "Метаданные, жанры, актёры, оценки; получение рекомендаций")
+    Container(playback, "playback", "Go / REST", "Доступ к видео; ссылка на поток; история просмотров")
+    Container(subscriptions, "subscriptions", "Go / REST", "Тарифы, доступ, скидки; активация после оплаты")
+    Container(payments, "payments", "Go / REST", "Платёжные операции и уведомления провайдера")
+  ContainerQueue(kafka, "Kafka", "Apache Kafka", "Оплата, просмотры и оценки")
+  Boundary(postgres, "Один PostgreSQL · каждый сервис читает и изменяет только свою БД (отдельная роль)") {
+    together {
+      ContainerDb(users_db, "users", "PostgreSQL", "Пользователи и избранное")
+      ContainerDb(catalog_db, "movies", "PostgreSQL", "Каталог и оценки")
+      ContainerDb(playback_db, "playback", "PostgreSQL", "Источники видео и история")
+      ContainerDb(subscriptions_db, "subscriptions", "PostgreSQL", "Подписки, тарифы, скидки")
+      ContainerDb(payments_db, "payments", "PostgreSQL", "Платежи и outbox")
+    }
+  }
+}
+Boundary(external, "External Services") {
+  System_Ext(provider, "Video Providers / CDN", "Выдают разрешённую ссылку; передают видео напрямую клиентам")
+  System_Ext(payment_provider, "Payment Providers", "Проводят платежи; отправляют webhook результата")
+  System_Ext(partners, "Loyalty & Marketplaces", "Партнёрские скидки и предложения")
+  System_Ext(recommendations, "Recommendation System", "Подборки по просмотрам и оценкам")
+}
+Rel_D(user, web, "Просмотр")
+Rel_D(user, mobile, "Просмотр")
+Rel_D(user, tv, "Просмотр")
+Rel_D(web, gateway, "API", "HTTPS / JSON")
+Rel_D(mobile, gateway, "API", "HTTPS / JSON")
+Rel_D(tv, gateway, "API", "HTTPS / JSON")
+Rel_D(gateway, users, "Профиль, вход, избранное", "REST")
+Rel_D(gateway, catalog, "Каталог и рекомендации", "REST")
+Rel_D(gateway, playback, "Начало / события просмотра", "REST")
+Rel_D(gateway, subscriptions, "Тарифы и подписка", "REST")
+Rel_D(gateway, payments, "Создание / статус платежа", "REST")
+Rel_D(playback, subscriptions, "Проверяет доступ", "REST", $tags="service")
+Rel_L(payments, subscriptions, "Условия покупки", "REST", $tags="service")
+Rel_D(catalog, kafka, "Публикует MovieRated", "Kafka", $tags="event")
+Rel_D(playback, kafka, "Публикует MovieViewed", "Kafka", $tags="event")
+Rel_D(payments, kafka, "Публикует PaymentSucceeded", "Kafka", $tags="event")
+Rel_U(kafka, subscriptions, "Доставляет PaymentSucceeded", "Kafka", $tags="event")
+Rel_R(playback, provider, "Получает ссылку на видео", "HTTPS")
+BiRel_D(payments, payment_provider, "Создание платежа / webhook результата", "HTTPS")
+Rel_R(subscriptions, partners, "Проверяет скидку", "HTTPS / REST")
+Rel_R(catalog, recommendations, "Получает подборку", "HTTPS / REST")
+Rel_R(kafka, recommendations, "Просмотры и оценки", "Асинхронная интеграция", $tags="event")
+Lay_R(playback, payments)
+Lay_R(platform, external)
+provider -[hidden]down-> payment_provider
+payment_provider -[hidden]down-> partners
+partners -[hidden]down-> recommendations
+Lay_R(web, mobile)
+Lay_R(mobile, tv)
+Lay_D(kafka, postgres)
+Lay_D(users, users_db)
+Lay_D(catalog, catalog_db)
+Lay_D(playback, playback_db)
+Lay_D(subscriptions, subscriptions_db)
+Lay_D(payments, payments_db)
+footer Серые стрелки — синхронные API-вызовы; оранжевые — REST между сервисами; зелёный пунктир — события Kafka.\nДвунаправленная связь — создание платежа и обратный webhook. SQL-связи и прямой видеопоток CDN → Web/Mobile/TV опущены.
+@enduml

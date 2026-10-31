@@ -5,7 +5,8 @@ global:
 
 # Image pull secrets
 imagePullSecrets:
-  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6
+  # Supply through a local values file excluded from Git.
+  dockerconfigjson: ""
 # Database configuration
 database:
   host: postgres
@@ -33,7 +34,7 @@ database:
 monolith:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/monolith
+    repository: ghcr.io/andymcfishka/architecture-pro-cinemaabyss/monolith
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -53,7 +54,7 @@ monolith:
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
+    repository: ghcr.io/andymcfishka/architecture-pro-cinemaabyss/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -73,7 +74,7 @@ proxyService:
 moviesService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/movies-service
+    repository: ghcr.io/andymcfishka/architecture-pro-cinemaabyss/movies-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -93,7 +94,7 @@ moviesService:
 eventsService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/events-service
+    repository: ghcr.io/andymcfishka/architecture-pro-cinemaabyss/events-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -114,7 +115,7 @@ kafka:
   enabled: true
   image:
     repository: wurstmeister/kafka
-    tag: 2.13-2.7.0
+    tag: 2.13-2.7.2
     pullPolicy: IfNotPresent
   replicas: 1
   resources:
@@ -143,8 +144,8 @@ kafka:
 zookeeper:
   enabled: true
   image:
-    repository: wurstmeister/zookeeper
-    tag: latest
+    repository: zookeeper
+    tag: 3.9.3
     pullPolicy: IfNotPresent
   replicas: 1
   resources:
