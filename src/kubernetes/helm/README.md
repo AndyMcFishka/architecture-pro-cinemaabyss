@@ -10,10 +10,16 @@ This Helm chart deploys the CinemaAbyss application on a Kubernetes cluster.
 
 ## Installing the Chart
 
-To install the chart with the release name `cinemaabyss`:
+Create `wip/helm-secrets.json` (excluded from Git, permissions `600`) with your base64-encoded Docker config:
+
+```json
+{"imagePullSecrets":{"dockerconfigjson":"BASE64_DOCKER_CONFIG_WITH_GHCR_AUTH"}}
+```
+
+Run from the repository root:
 
 ```bash
-helm install cinemaabyss ./cinemaabyss
+helm install cinemaabyss src/kubernetes/helm --namespace cinemaabyss --create-namespace -f wip/helm-secrets.json
 ```
 
 The command deploys CinemaAbyss on the Kubernetes cluster with default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
@@ -23,8 +29,10 @@ The command deploys CinemaAbyss on the Kubernetes cluster with default configura
 To uninstall/delete the `cinemaabyss` deployment:
 
 ```bash
-helm uninstall cinemaabyss
+helm uninstall cinemaabyss --namespace cinemaabyss
 ```
+
+Uninstalling deletes the Kafka and ZooKeeper PVCs; deleting the namespace also deletes PostgreSQL data.
 
 ## Parameters
 
@@ -60,7 +68,7 @@ helm uninstall cinemaabyss
 | Name                           | Description                                     | Value           |
 |--------------------------------|-------------------------------------------------|-----------------|
 | `monolith.enabled`             | Enable monolith deployment                      | `true`          |
-| `monolith.image.repository`    | Monolith image repository                       | `ghcr.io/db-exp/cinemaabysstest/monolith` |
+| `monolith.image.repository`    | Monolith image repository                       | `ghcr.io/andymcfishka/architecture-pro-cinemaabyss/monolith` |
 | `monolith.image.tag`           | Monolith image tag                              | `latest`        |
 | `monolith.image.pullPolicy`    | Monolith image pull policy                      | `Always`        |
 | `monolith.replicas`            | Number of monolith replicas                     | `1`             |
@@ -77,7 +85,7 @@ helm uninstall cinemaabyss
 | Name                           | Description                                     | Value           |
 |--------------------------------|-------------------------------------------------|-----------------|
 | `proxyService.enabled`         | Enable proxy service deployment                 | `true`          |
-| `proxyService.image.repository`| Proxy service image repository                  | `ghcr.io/db-exp/cinemaabysstest/proxy-service` |
+| `proxyService.image.repository`| Proxy service image repository                  | `ghcr.io/andymcfishka/architecture-pro-cinemaabyss/proxy-service` |
 | `proxyService.image.tag`       | Proxy service image tag                         | `latest`        |
 | `proxyService.image.pullPolicy`| Proxy service image pull policy                 | `Always`        |
 | `proxyService.replicas`        | Number of proxy service replicas                | `1`             |
@@ -94,7 +102,7 @@ helm uninstall cinemaabyss
 | Name                           | Description                                     | Value           |
 |--------------------------------|-------------------------------------------------|-----------------|
 | `moviesService.enabled`        | Enable movies service deployment                | `true`          |
-| `moviesService.image.repository`| Movies service image repository                | `ghcr.io/db-exp/cinemaabysstest/movies-service` |
+| `moviesService.image.repository`| Movies service image repository                | `ghcr.io/andymcfishka/architecture-pro-cinemaabyss/movies-service` |
 | `moviesService.image.tag`      | Movies service image tag                        | `latest`        |
 | `moviesService.image.pullPolicy`| Movies service image pull policy               | `Always`        |
 | `moviesService.replicas`       | Number of movies service replicas               | `1`             |
@@ -111,7 +119,7 @@ helm uninstall cinemaabyss
 | Name                           | Description                                     | Value           |
 |--------------------------------|-------------------------------------------------|-----------------|
 | `eventsService.enabled`        | Enable events service deployment                | `true`          |
-| `eventsService.image.repository`| Events service image repository                | `ghcr.io/db-exp/cinemaabysstest/events-service` |
+| `eventsService.image.repository`| Events service image repository                | `ghcr.io/andymcfishka/architecture-pro-cinemaabyss/events-service` |
 | `eventsService.image.tag`      | Events service image tag                        | `latest`        |
 | `eventsService.image.pullPolicy`| Events service image pull policy               | `Always`        |
 | `eventsService.replicas`       | Number of events service replicas               | `1`             |
@@ -129,7 +137,7 @@ helm uninstall cinemaabyss
 |--------------------------------|-------------------------------------------------|-----------------|
 | `kafka.enabled`                | Enable Kafka deployment                         | `true`          |
 | `kafka.image.repository`       | Kafka image repository                          | `wurstmeister/kafka` |
-| `kafka.image.tag`              | Kafka image tag                                 | `2.13-2.7.0`    |
+| `kafka.image.tag`              | Kafka image tag                                 | `2.13-2.7.2`    |
 | `kafka.image.pullPolicy`       | Kafka image pull policy                         | `IfNotPresent`  |
 | `kafka.replicas`               | Number of Kafka replicas                        | `1`             |
 | `kafka.resources.limits.cpu`   | Kafka CPU limit                                 | `1000m`         |
@@ -146,8 +154,8 @@ helm uninstall cinemaabyss
 | Name                           | Description                                     | Value           |
 |--------------------------------|-------------------------------------------------|-----------------|
 | `zookeeper.enabled`            | Enable Zookeeper deployment                     | `true`          |
-| `zookeeper.image.repository`   | Zookeeper image repository                      | `wurstmeister/zookeeper` |
-| `zookeeper.image.tag`          | Zookeeper image tag                             | `latest`        |
+| `zookeeper.image.repository`   | Zookeeper image repository                      | `zookeeper` |
+| `zookeeper.image.tag`          | Zookeeper image tag                             | `3.9.3`         |
 | `zookeeper.image.pullPolicy`   | Zookeeper image pull policy                     | `IfNotPresent`  |
 | `zookeeper.replicas`           | Number of Zookeeper replicas                    | `1`             |
 | `zookeeper.resources.limits.cpu`| Zookeeper CPU limit                            | `500m`          |

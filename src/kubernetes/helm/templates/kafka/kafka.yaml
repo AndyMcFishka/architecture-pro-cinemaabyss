@@ -71,14 +71,13 @@ spec:
           name: leader-election
         resources:
           {{- toYaml .Values.zookeeper.resources | nindent 10 }}
-        env:
-        - name: ZOOKEEPER_CLIENT_PORT
-          value: "2181"
-        - name: ZOOKEEPER_TICK_TIME
-          value: "2000"
         volumeMounts:
         - name: zookeeper-data
-          mountPath: /var/lib/zookeeper/data
+          mountPath: /data
+          subPath: data
+        - name: zookeeper-data
+          mountPath: /datalog
+          subPath: datalog
         readinessProbe:
           tcpSocket:
             port: 2181
@@ -176,6 +175,8 @@ spec:
           value: "{{ range $i, $topic := .Values.kafka.topics }}{{ if $i }},{{ end }}{{ $topic.name }}:{{ $topic.partitions }}:{{ $topic.replicationFactor }}{{ end }}"
         - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
           value: "true"
+        - name: KAFKA_HEAP_OPTS
+          value: "-Xms256m -Xmx512m"
         - name: KAFKA_BROKER_ID
           value: "1"
         - name: KAFKA_LOG_DIRS
